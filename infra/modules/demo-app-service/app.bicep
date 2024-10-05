@@ -23,7 +23,7 @@ resource appService 'Microsoft.Web/sites@2023-01-01' = {
       minTlsVersion: '1.2'
       // alwaysOn: true
       //ftpsState: 'Disabled'
-      appSettings: concat(defaultConfig, appSettings)
+      //appSettings: concat(defaultConfig, appSettings)
     }
     httpsOnly: true
   }
