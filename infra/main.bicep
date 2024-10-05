@@ -1,11 +1,5 @@
-param rgLocation string = resourceGroup().location
-
 //basic config
 param retentionInDays int = 30
-
-//APIM
-param apiManagementPublisherEmail string = 'test@your-org.io'
-param apiManagementPublisherName string = 'API-M Publisher'
 
 param servicesPrefix string = 'SANDBOX-MJ-'
 param servicesPostfix string = '-001'
@@ -34,6 +28,7 @@ module demoAppBlue 'modules/demo-app-service/main.bicep' = {
   name: '${servicesPrefix}DemoApp-Blue'
   params: {
     servicesPrefix: '${servicesPrefix}DemoApp-Blue'
+    appRuntimeAppConfig: 'Blue'
   }
 }
 
@@ -41,6 +36,7 @@ module demoAppGreen 'modules/demo-app-service/main.bicep' = {
   name: '${servicesPrefix}DemoApp-Green'
   params: {
     servicesPrefix: '${servicesPrefix}DemoApp-Green'
+    appRuntimeAppConfig: 'Green'
   }
 }
 
@@ -65,6 +61,10 @@ module demoAppFd 'modules/connectivity/fd-app-endpoint.bicep' = {
   }
 }
 
+
+//APIM
+// param apiManagementPublisherEmail string = 'test@your-org.io'
+// param apiManagementPublisherName string = 'API-M Publisher'
 
 // module apim 'modules/connectivity/api-m.bicep' = {
 //   name: '${servicesPrefix}API-M${servicesPostfix}'
