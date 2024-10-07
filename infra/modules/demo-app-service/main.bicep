@@ -1,10 +1,15 @@
-param servicesPrefix string 
+param servicesPrefix string
 param aspName string = '${servicesPrefix}-AppServicePlan'
 param rgLocation string = resourceGroup().location
 param portalName string = '${servicesPrefix}-App'
 param appSettings array = []
 param appRuntimeAppConfig string
-var defaultConfig =[  
+param appInsightsKeyConnectionString string
+var defaultConfig =[
+  {
+    name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+    value: appInsightsKeyConnectionString
+  }
   {
     name: 'ASPNETCORE_ENVIRONMENT'
     value: appRuntimeAppConfig
@@ -19,8 +24,10 @@ module aspModule 'asp.bicep' = {
   name: '${aspName}-Module'
   params: {
     planName: aspName
-    planLocation: rgLocation
-    planSku: 'F1'
+    location: rgLocation
+    skuName : 'F1'
+    skuTier : 'Free'
+    kind : 'linux'
   }
 }
 module app 'app.bicep' = {

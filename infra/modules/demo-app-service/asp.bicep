@@ -1,15 +1,20 @@
 param planName string
-param planLocation string = resourceGroup().location
-param planSku string
-
-
-resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = { 
+param location string = resourceGroup().location
+param skuName string = 'F1'
+param skuTier string = 'Free'
+param kind string = 'linux'
+param reserved bool = true
+resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = { 
   name: planName
-  location: planLocation
+  location: location
   sku: {
-    name: planSku
+    name: skuName
+    tier: skuTier
   }
-  kind: 'linux'
+  kind: kind
+  properties:{
+    reserved: reserved
+  }
 }
 
 output appPlanId string = appServicePlan.id

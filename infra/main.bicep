@@ -23,12 +23,22 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-03
     retentionInDays: retentionInDays
   }
 }
+module appInsightModule 'modules/ai.bicep' = {
+  name: '${servicesPrefix}AppInsights-Module'
+  params: {
+    name: '${servicesPrefix}AppInsights-Workspace${servicesPostfix}'
+    location: resourceGroup().location
+    WorkspaceResourceId: logAnalyticsWorkspace.id
+  }
+  dependsOn: [ logAnalyticsWorkspace ]
+}
 
 module demoAppBlue 'modules/demo-app-service/main.bicep' = {
   name: '${servicesPrefix}DemoApp-Blue'
   params: {
     servicesPrefix: '${servicesPrefix}DemoApp-Blue'
     appRuntimeAppConfig: 'Blue'
+    appInsightsKeyConnectionString: appInsightModule.outputs.connectionString
   }
 }
 
@@ -37,6 +47,7 @@ module demoAppGreen 'modules/demo-app-service/main.bicep' = {
   params: {
     servicesPrefix: '${servicesPrefix}DemoApp-Green'
     appRuntimeAppConfig: 'Green'
+    appInsightsKeyConnectionString: appInsightModule.outputs.connectionString
   }
 }
 

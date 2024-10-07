@@ -28,12 +28,6 @@ resource originGroups 'Microsoft.Cdn/profiles/originGroups@2021-06-01' = [for (h
       sampleSize: 4
       successfulSamplesRequired: 3
     }
-    healthProbeSettings: {
-      probePath: '/'
-      probeRequestType: 'HEAD'
-      probeProtocol: 'Http'
-      probeIntervalInSeconds: 100
-    }
   }
 }]
 
@@ -43,6 +37,7 @@ resource origins 'Microsoft.Cdn/profiles/originGroups/origins@2021-06-01' = [for
   parent: originGroups[index]
   properties: {
     hostName: hostname
+    originHostHeader: hostname
     httpPort: 80
     httpsPort: 443
     enabledState: 'Enabled'
