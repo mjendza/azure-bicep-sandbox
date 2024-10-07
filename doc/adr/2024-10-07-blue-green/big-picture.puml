@@ -1,0 +1,45 @@
+@startuml "Azure Blue Green Deployment with FrontDoor"
+' uncomment the following line and comment the first to use locally
+' !include C4_Container.puml
+' https://github.com/plantuml-stdlib/C4-PlantUML/blob/master/LayoutOptions.md#layout_top_down-or-layout_left_right-or-layout_landscape
+
+!theme C4_brown from https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/themes
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+SHOW_PERSON_OUTLINE()
+LAYOUT_TOP_DOWN()
+
+Person(person, John, "User")
+
+System_Boundary(azure, "Azure") {
+    System_Boundary(fd, "Azure FrontDoor") {
+        Container(firewall, "WAF")
+        Container(end1, "Endpoint", "Products")
+        Container(route1, "Route", "Products")
+        Container(originGroup1, "Origin Group", "Products", "Blue")
+        Container(origin1, "Origin", "Products", "Blue")
+        Container(appService1, "WebApp", "Products", "Blue")
+        
+        Container(originGroup2, "Origin Group", "Products", "Green")
+        Container(origin2, "Origin", "Products", "Green")
+        Container(appService2, "WebApp", "Products", "Green")
+        
+        Container(ruleSet1, "Rule Set", "Products")
+        Container(rule1, "Rule", "Products", "Green")
+        
+    }
+}
+Rel(end1, firewall, "Uses", "OWASP")
+Rel(person, end1, "Uses", "https")
+Rel(end1, route1, "Uses")
+Rel(route1, originGroup1, "Default Path")
+Rel(originGroup1, origin1, "Uses")
+Rel(origin1, appService1, "Uses")
+Rel(ruleSet1, rule1, "checks")
+
+Rel(route1, ruleSet1, "checks")
+Rel(rule1, route1, "Fire & override path")
+Rel(route1, originGroup2, "Green Paht")
+Rel(originGroup2, origin2, "Uses")
+Rel(origin2, appService2, "Uses")
+@enduml

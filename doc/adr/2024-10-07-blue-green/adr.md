@@ -11,7 +11,7 @@ State is one of: pending, approved, amended, deprecated.
 Date is an ISO 8601 (YYYY-MM-DD) string.
 PR is the pull request that submitted the change, including information such as the diff, contributors, and reviewers.
 Format:
-- \[Status of ADR e.g. approved, amended, etc.\]\(URL of pull request\) YYYY-MM-DD
+- [Pending](https://github.com/mjendza/azure-bicep-sandbox/pull/3) 2024-10-07 by @mjendza
 
 
 ## Referenced Use Case(s)
