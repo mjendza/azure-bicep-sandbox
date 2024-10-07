@@ -13,13 +13,20 @@ var defaultConfig =[
     value: 'https://+:443'
   }
 ]
-
-resource appService 'Microsoft.Web/sites@2023-01-01' = {
+@description('The linux wersion')
+@allowed([ 
+  'DOTNETCORE|6.0' 
+  'DOTNETCORE|8.0' 
+  'DOTNETCORE|Latest' 
+])
+param linuxFxVersion string='DOTNETCORE|8.0'
+resource appService 'Microsoft.Web/sites@2022-09-01' = {
   name: name
   location: rgLocation  
   properties:{
     serverFarmId: appServicePlanId
     siteConfig:{
+      linuxFxVersion: linuxFxVersion
       minTlsVersion: '1.2'
       // alwaysOn: true
       //ftpsState: 'Disabled'
