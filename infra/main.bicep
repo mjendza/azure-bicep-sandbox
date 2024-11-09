@@ -13,9 +13,6 @@ param tagObject object = {
 // SQL Server parameters
 param sqlServerName string = '${servicesPrefix}sqlserver${servicesPostfix}'
 param sqlDatabaseName string = '${servicesPrefix}sqldb${servicesPostfix}'
-param sqlAdminLogin string = 'sqladmin'
-@secure()
-param sqlAdminPassword string
 
 
 
@@ -45,9 +42,17 @@ resource sqlServer 'Microsoft.Sql/servers@2021-11-01-preview' = {
   name: sqlServerName
   location: resourceGroup().location
   tags: tagObject
+  identity: {
+    type: 'SystemAssigned'
+  }
   properties: {
-    administratorLogin: sqlAdminLogin
-    administratorLoginPassword: sqlAdminPassword
+    administrators: {
+      administratorType: 'ActiveDirectory'
+      principalType: 'Application'
+      login: 'SqlServerManagedIdentity'
+      sid: sqlServer.identity.principalId
+      tenantId: subscription().tenantId
+    }
   }
 }
 
@@ -73,13 +78,22 @@ resource sqlRoleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-p
   }
 }
 
+// Enable Azure AD authentication for SQL Server
+resource sqlServerAzureADOnlyAuth 'Microsoft.Sql/servers/azureADOnlyAuthentications@2021-11-01-preview' = {
+  parent: sqlServer
+  name: 'Default'
+  properties: {
+    azureADOnlyAuthentication: true
+  }
+}
+
 module demoAppBlue 'modules/demo-app-service/main.bicep' = {
   name: '${servicesPrefix}DemoApp-Blue'
   params: {
     servicesPrefix: '${servicesPrefix}DemoApp-Blue'
     appRuntimeAppConfig: 'Blue'
     appInsightsKeyConnectionString: appInsightModule.outputs.connectionString
-    sqlConnectionString: 'Server=${sqlServer.properties.fullyQualifiedDomainName};Database=${sqlDatabaseName};User Id=${sqlAdminLogin};Password=${sqlAdminPassword};'
+    sqlConnectionString: 'Server=${sqlServer.properties.fullyQualifiedDomainName};Database=${sqlDatabaseName};Authentication=Active Directory Default;'
   }
 }
 
@@ -89,7 +103,7 @@ module demoAppGreen 'modules/demo-app-service/main.bicep' = {
     servicesPrefix: '${servicesPrefix}DemoApp-Green'
     appRuntimeAppConfig: 'Green'
     appInsightsKeyConnectionString: appInsightModule.outputs.connectionString
-    sqlConnectionString: 'Server=${sqlServer.properties.fullyQualifiedDomainName};Database=${sqlDatabaseName};User Id=${sqlAdminLogin};Password=${sqlAdminPassword};'
+    sqlConnectionString: 'Server=${sqlServer.properties.fullyQualifiedDomainName};Database=${sqlDatabaseName};Authentication=Active Directory Default;'
   }
 }
 
