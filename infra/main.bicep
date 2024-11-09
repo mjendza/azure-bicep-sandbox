@@ -1,4 +1,3 @@
-//basic config
 param retentionInDays int = 30
 
 param servicesPrefix string = 'SANDBOX-MJ-'
@@ -9,8 +8,6 @@ param tagObject object = {
   Environment: 'SANDBOX'
   Owner: 'MJ'
 }
-
-
 
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-03-01-preview' = {
   name: '${servicesPrefix}LogAnalytics-Workspace${servicesPostfix}'
@@ -23,6 +20,7 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-03
     retentionInDays: retentionInDays
   }
 }
+
 module appInsightModule 'modules/ai.bicep' = {
   name: '${servicesPrefix}AppInsights-Module'
   params: {
@@ -72,6 +70,36 @@ module demoAppFd 'modules/connectivity/fd-app-endpoint.bicep' = {
   }
 }
 
+module sqlModule 'modules/sql.bicep' = {
+  name: '${servicesPrefix}SQL-Module'
+  params: {
+    sqlServerName: '${servicesPrefix}sqlserver'
+    sqlDatabaseName: '${servicesPrefix}sqldb'
+  }
+  dependsOn: [logAnalyticsWorkspace]
+}
+
+module demoAppBlue 'modules/demo-app-service/main.bicep' = {
+  name: '${servicesPrefix}DemoApp-Blue'
+  params: {
+    servicesPrefix: '${servicesPrefix}DemoApp-Blue'
+    appRuntimeAppConfig: 'Blue'
+    appInsightsKeyConnectionString: appInsightModule.outputs.connectionString
+    sqlConnectionString: sqlModule.outputs.sqlServerConnectionString
+  }
+  dependsOn: [sqlModule]
+}
+
+module demoAppGreen 'modules/demo-app-service/main.bicep' = {
+  name: '${servicesPrefix}DemoApp-Green'
+  params: {
+    servicesPrefix: '${servicesPrefix}DemoApp-Green'
+    appRuntimeAppConfig: 'Green'
+    appInsightsKeyConnectionString: appInsightModule.outputs.connectionString
+    sqlConnectionString: sqlModule.outputs.sqlServerConnectionString
+  }
+  dependsOn: [sqlModule]
+}
 
 //APIM
 // param apiManagementPublisherEmail string = 'test@your-org.io'
