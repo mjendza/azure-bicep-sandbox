@@ -5,6 +5,10 @@ param portalName string = '${servicesPrefix}-App'
 param appSettings array = []
 param appRuntimeAppConfig string
 param appInsightsKeyConnectionString string
+param sqlConnectionString string
+param sqlServerName string
+param sqlDatabaseName string
+
 var defaultConfig =[
   {
     name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
@@ -36,9 +40,25 @@ module app 'app.bicep' = {
     name: portalName
     rgLocation: rgLocation
     appServicePlanId: aspModule.outputs.appPlanId
-    appSettings: concat(defaultConfig, appSettings)
+    appSettings: concat(defaultConfig, appSettings, [
+      {
+        name: 'SQL_CONNECTION_STRING'
+        value: sqlConnectionString
+      }
+    ])
   }
   dependsOn: [ aspModule ]
 }
+
+resource sqlRoleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  name: guid(app.outputs.appServiceId, 'db-reader')
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'db-reader')
+    principalId: app.identity.principalId
+    scope: resourceId('Microsoft.Sql/servers/databases', sqlServerName, sqlDatabaseName)
+  }
+  dependsOn: [ app ]
+}
+
 output appServiceId string = app.outputs.appServiceId
 output hostName string = app.outputs.hostName
