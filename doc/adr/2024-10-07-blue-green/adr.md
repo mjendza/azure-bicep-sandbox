@@ -11,20 +11,26 @@ List ADR submitters.
 ## Referenced Use Case(s)
 
 ## Context
-Expected behavior:
-- Improve deployment process - reduce downtime and risk.
-- Improve the ability to rollback changes.
+Expected behaviour:
+- Braking changes are not part of that design. The storage/DB behind the services is versioned and can be used with blue and green services.
+- Improve the deployment process and reduce downtime and risk.
+- Improve the ability to roll back changes.
+- The solution will be used with Identity Provider (Azure AD B2C, Entra ID, Entra External ID for Customers)
 
+### Business needs
+- Zero downtime deployment for infrastructure changes.
+- Warm up a release version.
+  
 ## Proposed Design
 
 ### Basic case
 ![Blue-Green Deployment](Azure_Blue_Green_Deployment_with_FrontDoor.png)
 
 FrontDoor RuleSet decision to route traffic to Blue or Green deployment origin.
-When deploying a new version, the FrontDoor Rule can override the routing to the new deployment origin based on the `X-Target-Origin` header and value `green`. A consumer for the system can change the header value to `green` to route the traffic to the Green deployment origin. The automated test on the pipeline can check the new deployed service also.
+When deploying a new version, the FrontDoor Rule can override the routing to the new deployment origin based on the `X-Target-Origin` header and value `green`. A consumer for the system can change the header value to `green` to route the traffic to the Green deployment origin. The automated test on the pipeline can also check the newly deployed service.
 
 ### Version 2 (V2)
-As an extension to the basic case with the Version2 (V2) the FrontDoor can use two origins for the same Origing Group and route the trafic based on the defined rule like 75% to 25%). In the case of the errors with the 1.1 version, the traffic can be routed to the 1.0 version based on the alert, event bus and automation.
+As an extension to the basic case with Version 2 (V2), the FrontDoor can use two origins for the same Origing Group and route the traffic based on a defined rule (e.g., 75% to 25%). In the case of errors with the 1.1 version, the traffic can be routed to the 1.0 version based on the alert, event bus, and automation.
 ![V2](Azure_Blue_Green_Deployment_with_FrontDoor_V2.png)
 
 ## Considerations
@@ -38,7 +44,7 @@ As an extension to the basic case with the Version2 (V2) the FrontDoor can use t
   - Not fully isolated - same .Net Core version, KeyVault, etc.
 
 ## Decision
-First implementation should follow the basic case. The V2 can be implemented later.
+The first implementation should follow the basic case. The V2 can be implemented later.
 
 ## Other Related ADRs
 Empty
